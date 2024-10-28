@@ -2,11 +2,15 @@ package com.fipe.leo.demo.principal;
 
 import com.fipe.leo.demo.model.Dados;
 import com.fipe.leo.demo.model.Modelos;
+import com.fipe.leo.demo.model.Veiculo;
 import com.fipe.leo.demo.service.ConsumoApi;
 import com.fipe.leo.demo.service.ConverteDados;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class Principal {
     private Scanner sc = new Scanner(System.in);
@@ -45,5 +49,27 @@ public class Principal {
         System.out.println(modeloLista);
         modeloLista.modelos().stream().sorted(Comparator.comparing(Dados::nome));
 
+        System.out.println("Digite um trecho do nome do veículo desejado");
+        var nomeVeiculo = sc.nextLine();
+        List<Dados>modelosFiltrados = modeloLista.modelos().stream()
+                .filter(m -> m.nome().toLowerCase().contains(nomeVeiculo.toLowerCase()))
+                .collect(Collectors.toList());
+        System.out.println("Modelos filtrados: ");
+        modelosFiltrados.forEach(System.out::println);
+
+        System.out.println("Digite o código do modelo para buscar as avaliações: ");
+        var codigoModelo = sc.nextLine();
+        endereco = endereco+"/"+codigoModelo+"/anos";
+        json = consumoApi.obterDados(endereco);
+        List<Dados>anos = conversor.obterLista(json, Dados.class);
+        List<Veiculo>veiculos = new ArrayList<>();
+        for (int i = 0; i < anos.size(); i++) {
+            var enderecoAnos = endereco+"/"+anos.get(i).codigo();
+            json = consumoApi.obterDados(enderecoAnos);
+            Veiculo veiculo = conversor.obterDados(json, Veiculo.class);
+            veiculos.add(veiculo);
+        }
+        System.out.println("Veículos filtrados: ");
+        veiculos.forEach(System.out::println);
     }
 }
